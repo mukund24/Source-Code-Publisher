@@ -1,0 +1,159 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+///////////////////////////////////////////////////////////////////////////
+// IRuleAndAction.cs - Interfaces &amp; abstract bases for rules and actions //
+// ver 1.1                                                               //
+// Language:    C#, 2008, .Net Framework 4.0                             //
+// Platform:    Dell Precision T7400, Win7, SP1                          //
+// Application: Demonstration for CSE681, Project #2, Fall 2011          //
+// Author:      Jim Fawcett, CST 4-187, Syracuse University              //
+//              (315) 443-3948, jfawcett@twcny.rr.com                    //
+///////////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ * Module Operations:
+ * ------------------
+ * This module defines the following classes:
+ *   IRule   - interface contract for Rules
+ *   ARule   - abstract base class for Rules that defines some common ops
+ *   IAction - interface contract for rule actions
+ *   AAction - abstract base class for actions that defines common ops
+ */
+/* Required Files:
+ *   IRuleAndAction.cs
+ *   
+ * Build command:
+ *   Interfaces and abstract base classes only so no build
+ *   
+ * Maintenance History:
+ * --------------------
+ * ver 1.1 : 11 Sep 2011
+ * - added properties displaySemi and displayStack
+ * ver 1.0 : 28 Aug 2011
+ * - first release
+ *
+ * Note:
+ * This package does not have a test stub as it contains only interfaces
+ * and abstract classes.
+ *
+ */
+</span>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+<span class="namespace">namespace CodeAnalysis
+</span><span>{
+  /////////////////////////////////////////////////////////
+  // contract for actions used by parser rules
+
+<span class="interface">  public interface IAction
+</span><span>  {
+    void doAction(CSsemi.CSemiExp semi);
+  }
+</span>  /////////////////////////////////////////////////////////
+  // abstract action base supplying common functions
+
+<span class="class">  public abstract class AAction : IAction
+</span><span>  {
+    static bool displaySemi_ = false;   // default
+    static bool displayStack_ = false;  // default
+
+    public abstract void doAction(CSsemi.CSemiExp semi);
+
+    public static bool displaySemi 
+    {
+      get { return displaySemi_; }
+      set { displaySemi_ = value; }
+    }
+    public static bool displayStack 
+    {
+      get { return displayStack_; }
+      set { displayStack_ = value; }
+    }
+
+<span class="function">    public virtual void display(CSsemi.CSemiExp semi)
+</span><span>    {
+      if(displaySemi)
+        for (int i = 0; i &lt; semi.count; ++i)
+          Console.Write(&quot;{0} &quot;, semi[i]);
+    }
+</span>  }
+</span>  /////////////////////////////////////////////////////////
+  // contract for parser rules
+
+<span class="interface">  public interface IRule
+</span><span>  {
+    bool test(CSsemi.CSemiExp semi);
+    void add(IAction action);
+  }
+</span>  /////////////////////////////////////////////////////////
+  // abstract rule base implementing common functions
+
+<span class="class">  public abstract class ARule : IRule
+</span><span>  {
+    private List&lt;IAction&gt; actions;
+<span class="function">    public ARule()
+</span><span>    {
+      actions = new List&lt;IAction&gt;();
+    }
+</span><span class="function">    public void add(IAction action)
+</span><span>    {
+      actions.Add(action);
+    }
+</span>    abstract public bool test(CSsemi.CSemiExp semi);
+<span class="function">    public void doActions(CSsemi.CSemiExp semi)
+</span><span>    {
+      foreach (IAction action in actions)
+        action.doAction(semi);
+    }
+</span><span class="function">    public int indexOfType(CSsemi.CSemiExp semi)
+</span><span>    {
+      int indexCL = semi.Contains(&quot;class&quot;);
+      int indexIF = semi.Contains(&quot;interface&quot;);
+      int indexST = semi.Contains(&quot;struct&quot;);
+      int indexEN = semi.Contains(&quot;enum&quot;);
+
+      int index = Math.Max(indexCL, indexIF);
+      index = Math.Max(index, indexST);
+      index = Math.Max(index, indexEN);
+      return index;
+    }
+</span>  }
+</span>}
+</span>
+
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

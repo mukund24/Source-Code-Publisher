@@ -1,0 +1,491 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+/////////////////////////////////////////////////////////////////////////
+// Semi.cs   -  Builds semiExpressions                                 //
+// ver 2.0                                                             //
+// Language:    C#, Visual Studio 10.0, .Net Framework 4.0             //
+// Platform:    Dell Precision T7400 , Win 7, SP 1                     //
+// Application: Pr#2 Help, CSE681, Fall 2011                           //
+// Author:      Jim Fawcett, CST 2-187, Syracuse University            //
+//              (315) 443-3948, jfawcett@twcny.rr.com                  //
+/////////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ * Module Operations
+ * =================
+ * Semi provides, via class CSemiExp, facilities to extract semiExpressions.
+ * A semiExpression is a sequence of tokens that is just the right amount
+ * of information to parse for code analysis.  SemiExpressions are token
+ * sequences that end in &quot;{&quot; or &quot;}&quot; or &quot;;&quot;
+ * 
+ * CSemiExp works with a private CToker object attached to a specified file.
+ * It provides a get() function that extracts semiExpressions from the file
+ * while filtering out comments and merging quotes into single tokens.
+ * 
+ * Public Interface
+ * ================
+ * CSemiExp semi = new CSemiEx;();    // constructs CSemiExp object
+ * if(semi.open(fileName)) ...        // attaches semi to specified file
+ * semi.close();                      // closes file stream
+ * if(semi.Equals(se)) ...            // do these semiExps have same tokens?
+ * int hc = semi.GetHashCode()        // returns hashcode
+ * if(getSemi()) ...                  // extracts and stores next semiExp
+ * int len = semi.count;              // length property
+ * semi.verbose = true;               // verbose property - shows tokens
+ * string tok = semi[2];              // access a semi token
+ * string tok = semi[1];              // extract token
+ * semi.flush();                      // removes all tokens
+ * semi.initialize();                 // adds &quot;;&quot; to empty semi-expression
+ * semi.insert(2,tok);                // inserts token as third element
+ * semi.Add(tok);                     // appends token
+ * semi.Add(tokArray);                // appends array of tokens
+ * semi.display();                    // sends tokens to Console
+ * string show = semi.displayStr();   // returns tokens as single string
+ * semi.returnNewLines = false;       // property defines newline handling
+ *                                    //   default is true
+ */
+//
+/*
+ * Build Process
+ * =============
+ * Required Files:
+ *   Semi.cs Toker.cs
+ * 
+ * Compiler Command:
+ *   csc /target:exe /define:TEST_SEMI Semi.cs Toker.cs
+ * 
+ * Maintenance History
+ * ===================
+ * ver 2.0 : 05 Sep 11
+ *   - Converted to new C# property syntax
+ *   - Converted from untyped ArrayList to generic List&lt;string&gt;
+ *   - Simplified display() and displayStr()
+ *   - Added new tests in test stub
+ * ver 1.9 : 27 Sep 08
+ *   - Changed comments on manual page to say that semi.ReturnNewLines is true by default
+ * ver 1.8 : 10 Jun 08
+ *   - Aniruddha Gore added Contains function and set returnNewLines as the default
+ * ver 1.7 : 17 Jun 06
+ *   - added displayNewLines property
+ * ver 1.6 : 16 Jun 06
+ *   - added CSemi member functions copy(), remove(int i), and remove(string tok).
+ * ver 1.5 : 12 Jun 05
+ *   - added returnNewLines property
+ *   - modified way get() behaves so that it will not hang on files that
+ *     end with text that have no semiExp terminator.
+ * ver 1.4 : 30 May 05
+ *   - removed CppCommentFilter, CCommentFilter, SQuoteFilter, DQuoteFilter
+ *     since Toker now returns comments and quotes as tokens.
+ *   - added isComment(string tok) member function
+ * ver 1.3 : 16 Sep 03
+ *   - removed insert(tokenArray), added Add(tokenArray)
+ *     Since this is a change to public interface it may break some code.
+ *     It simply changes the name of the function to more directly 
+ *     describe what it does - append a token array.
+ *   - added overrides of Equals(object) and GetHashCode()
+ *   - completed Manual Page description of public interface
+ * ver 1.2 : 14 Sep 03
+ *   - cosmetic changes to comments
+ *   - Added formatting of extracted comments (see notes in code below)
+ * ver 1.1 : 13 Sep 03
+ *   - fixed bug in CppCommentFilter() that caused collection to terminate
+ *     if a C++ comment was on same line as a semiExpression.
+ *   - added calls to semiExp.Add(currTok) in SQuoteFilter() and DQuoteFilter()
+ *     which simplified getSemi().
+ *   - added some functions to create and manipulate semi-expressions.
+ * ver 1.0 : 31 Aug 03
+ *   - first release
+ * 
+ * Planned Modifications:
+ * ----------------------
+ * - return, or don&#39;t return, comments based on discardComments property
+ *   which is now present but inactive.
+ */
+//
+</span>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using CStoker;
+
+<span class="namespace">namespace CSsemi
+</span><span>{
+  ///////////////////////////////////////////////////////////////////////
+  // class CSemiExp - filters token stream and collects semiExpressions
+
+<span class="class">  public class CSemiExp
+</span><span>  {
+    CToker toker = null;
+    List&lt;string&gt; semiExp = null;
+    string currTok = &quot;&quot;;
+    string prevTok = &quot;&quot;;
+
+    //----&lt; constructor &gt;------------------------------------------------
+
+<span class="function">    public CSemiExp()
+</span><span>    {
+      toker = new CToker();
+      semiExp = new List&lt;string&gt;();
+      discardComments = true;  // not implemented yet
+      returnNewLines = true;
+      displayNewLines = false;
+    }
+</span>
+    //----&lt; test for equality &gt;------------------------------------------
+
+<span class="function">    override public bool Equals(Object semi)
+</span><span>    {
+      CSemiExp temp = (CSemiExp)semi;
+      if(temp.count != this.count)
+        return false;
+      for(int i=0; i&lt;temp.count &amp;&amp; i&lt;this.count; ++i)
+        if(this[i] != temp[i])
+          return false;
+      return true;
+    }
+</span>
+    //----&lt; pos of last str in semi-expression if found, -1 otherwise &gt;---- 
+    //
+    // added by TA Aniruddha Gore
+
+<span class="function">    public int Contains(string str)
+</span><span>    {        
+      for (int i = this.count - 1; i &gt;= 0; --i)        
+        if (this[i] == str)
+          return i;
+      return -1;
+    }
+</span>    //----&lt; have to override GetHashCode() &gt;-----------------------------
+
+<span class="function">    override public System.Int32 GetHashCode()
+</span><span>    {
+      return base.GetHashCode();
+    }
+</span>    //----&lt; opens member tokenizer with specified file &gt;-----------------
+
+<span class="function">    public bool open(string fileName)
+</span><span>    {
+      return toker.openFile(fileName);
+    }
+</span>    //----&lt; close file stream &gt;------------------------------------------
+
+<span class="function">    public void close()
+</span><span>    {
+      toker.close();
+    }
+</span>    //----&lt; is this the last token in the current semiExpression? &gt;------
+
+<span class="function">    bool isTerminator(string tok)
+</span><span>    {
+<span class="function">      switch(tok)
+</span><span>      {
+        case &quot;;&quot; : return true;
+        case &quot;{&quot; : return true;
+        case &quot;}&quot; : return true;
+        default  : return false;
+      }
+</span>    }
+</span>    //----&lt; get next token, saving previous token &gt;----------------------
+
+<span class="function">    string get()
+</span><span>    {
+      prevTok = currTok;
+      currTok = toker.getTok();
+      if(verbose)
+        Console.Write(&quot;{0} &quot;,currTok);
+      return currTok;
+    }
+</span>    //----&lt; is this character a punctuator&gt; &gt;----------------------------
+
+<span class="function">    bool IsPunc(char ch)
+</span><span>    {
+      return (Char.IsPunctuation(ch) || Char.IsSymbol(ch));
+    }
+</span>    //
+    //----&lt; are these characters an operator? &gt;--------------------------
+    //
+    // Performance issue - C# would not let me make opers static, so
+    // it is being constructed on every call.  This is not desireable,
+    // but neither is using a static data member that is initialized
+    // remotely.  I will think more about this later.
+
+<span class="function">    bool IsOperatorPair(char first, char second)
+</span><span>    { 
+      string[] opers = new string[]
+      { 
+        &quot;/*&quot;, &quot;*/&quot;, &quot;//&quot;, &quot;!=&quot;, &quot;==&quot;, &quot;&gt;=&quot;, &quot;&lt;=&quot;, &quot;&amp;&amp;&quot;, &quot;||&quot;, &quot;--&quot;, &quot;++&quot;,
+        &quot;+=&quot;, &quot;-=&quot;, &quot;*=&quot;, &quot;/=&quot;, &quot;%=&quot;, &quot;&amp;=&quot;, &quot;^=&quot;, &quot;|=&quot;, &quot;&lt;&lt;&quot;, &quot;&gt;&gt;&quot;,
+        &quot;\\n&quot;, &quot;\\t&quot;, &quot;\\r&quot;, &quot;\\f&quot;
+      };
+
+      StringBuilder test = new StringBuilder();
+      test.Append(first).Append(second);
+      foreach(string oper in opers)
+        if(oper.Equals(test.ToString()))
+          return true;
+      return false;
+    }
+</span>    //----&lt; collect semiExpression from filtered token stream &gt;----------
+
+<span class="function">    public bool getSemi()
+</span><span>    {
+      semiExp.RemoveRange(0,semiExp.Count);  // empty container
+      do
+      {
+        get();
+        if(currTok == &quot;&quot;)
+          return false;  // end of file
+        if(returnNewLines || currTok != &quot;\n&quot;)
+          semiExp.Add(currTok);
+      } while(!isTerminator(currTok) || count == 0);
+      return (semiExp.Count &gt; 0);
+    }
+</span>    //----&lt; get length property &gt;----------------------------------------
+
+    public int count
+    {
+      get { return semiExp.Count; }
+    }
+    //----&lt; indexer for semiExpression &gt;---------------------------------
+
+    public string this[int i]
+    {
+      get { return semiExp[i]; }
+      set { semiExp[i] = value;        }
+    }
+    //----&lt; insert token - fails if out of range and returns false&gt;------
+
+<span class="function">    public bool insert(int loc, string tok)
+</span><span>    {
+      if(0 &lt;= loc &amp;&amp; loc &lt; semiExp.Count)
+      {
+        semiExp.Insert(loc,tok);
+        return true;
+      }
+      return false;
+    }
+</span>    //----&lt; append token to end of semiExp &gt;-----------------------------
+
+<span class="function">    public CSemiExp Add(string token)
+</span><span>    {
+      semiExp.Add(token);
+      return this;
+    }
+    //----&lt; load semiExp from array of strings &gt;-------------------------
+
+<span class="function">    public void Add(string [] source)
+</span><span>    {
+      foreach(string tok in source)
+        semiExp.Add(tok);
+    }
+</span>    //--&lt; initialize semiExp with single &quot;;&quot; token - used for testing &gt;--
+
+<span class="function">    public bool initialize()
+</span><span>    {
+      if(semiExp.Count &gt; 0)
+        return false;
+      semiExp.Add(&quot;;&quot;);
+      return true;
+    }
+</span>    //----&lt; remove all contents of semiExp &gt;-----------------------------
+
+<span class="function">    public void flush()
+</span><span>    {
+      semiExp.RemoveRange(0,semiExp.Count);
+    }
+</span>    //----&lt; is this token a comment? &gt;-----------------------------------
+
+<span class="function">    public bool isComment(string tok)
+</span><span>    {
+      if(tok.Length &gt; 1)
+        if(tok[0] == &#39;/&#39;)
+          if(tok[1] == &#39;/&#39; || tok[1] == &#39;*&#39;)
+            return true;
+      return false;
+    }
+</span>    //----&lt; display semiExpression on Console &gt;--------------------------
+
+<span class="function">    public void display()
+</span><span>    {
+      Console.Write(&quot;\n&quot;);
+      Console.Write(displayStr());
+    }
+</span>    //----&lt; return display string &gt;--------------------------------------
+
+<span class="function">    public string displayStr()
+</span><span>    {
+      StringBuilder disp = new StringBuilder(&quot;&quot;);
+      foreach (string tok in semiExp)
+      {
+        disp.Append(tok);
+        if (tok.IndexOf(&#39;\n&#39;) != tok.Length-1)
+          disp.Append(&quot; &quot;);
+      }
+      return disp.ToString();
+    }
+</span>    //----&lt; announce tokens when verbose is true &gt;-----------------------
+
+    public bool verbose
+    {
+      get;
+      set;
+    }
+    //----&lt; determines whether new lines are returned with semi &gt;--------
+
+    public bool returnNewLines
+    {
+      get;
+      set;
+    }
+    //----&lt; determines whether new lines are displayed &gt;-----------------
+
+    public bool displayNewLines
+    {
+      get;
+      set;
+    }
+    //----&lt; determines whether comments are discarded &gt;------------------
+
+    public bool discardComments
+    {
+      get;
+      set;
+    }
+    //
+    //----&lt; make a copy of semiEpression &gt;-------------------------------
+
+<span class="function">    public CSemiExp clone()
+</span><span>    {
+      CSemiExp copy = new CSemiExp();
+      for (int i = 0; i &lt; count; ++i)
+      {
+        copy.Add(this[i]);
+      }
+      return copy;
+    }
+</span>    //----&lt; remove a token from semiExpression &gt;-------------------------
+
+<span class="function">    public bool remove(int i)
+</span><span>    {
+      if (0 &lt;= i &amp;&amp; i &lt; semiExp.Count)
+      {
+        semiExp.RemoveAt(i);
+        return true;
+      }
+      return false;
+    }
+    //----&lt; remove a token from semiExpression &gt;-------------------------
+
+<span class="function">    public bool remove(string token)
+</span><span>    {
+      if (semiExp.Contains(token))
+      {
+        semiExp.Remove(token);
+        return true;
+      }
+      return false;
+    }
+</span>    //
+#if(TEST_SEMI)
+
+    //----&lt; test stub &gt;--------------------------------------------------
+
+    [STAThread]
+<span class="function">    static void Main(string[] args)
+</span><span>    {
+      Console.Write(&quot;\n  Testing semiExp Operations&quot;);
+      Console.Write(&quot;\n ============================\n&quot;);
+
+      CSemiExp test = new CSemiExp();
+      test.returnNewLines = true;
+      test.displayNewLines = true;
+
+      string testFile = &quot;../../testSemi.txt&quot;;
+      if(!test.open(testFile))
+        Console.Write(&quot;\n  Can&#39;t open file {0}&quot;,testFile);
+      while(test.getSemi())
+        test.display();
+      
+      test.initialize();
+      test.insert(0,&quot;this&quot;);
+      test.insert(1,&quot;is&quot;);
+      test.insert(2,&quot;a&quot;);
+      test.insert(3,&quot;test&quot;);
+      test.display();
+
+      Console.Write(&quot;\n  2nd token = \&quot;{0}\&quot;\n&quot;,test[1]);
+
+      Console.Write(&quot;\n  removing first token:&quot;);
+      test.remove(0);
+      test.display();
+      Console.Write(&quot;\n&quot;);
+
+      Console.Write(&quot;\n  removing token \&quot;test\&quot;:&quot;);
+      test.remove(&quot;test&quot;);
+      test.display();
+      Console.Write(&quot;\n&quot;);
+
+      Console.Write(&quot;\n  making copy of semiExpression:&quot;);
+      CSemiExp copy = test.clone();
+      copy.display();
+      Console.Write(&quot;\n&quot;);
+
+      if(args.Length == 0)
+      {
+        Console.Write(&quot;\n  Please enter name of file to analyze\n\n&quot;);
+        return;
+      }
+      CSemiExp semi = new CSemiExp();
+      semi.returnNewLines = true;
+      if(!semi.open(args[0]))
+      {
+        Console.Write(&quot;\n  can&#39;t open file {0}\n\n&quot;,args[0]);
+        return;
+      }
+
+      Console.Write(&quot;\n  Analyzing file {0}&quot;,args[0]);
+      Console.Write(&quot;\n ----------------------------------\n&quot;);
+
+      while(semi.getSemi())
+        semi.display();
+      semi.close();
+    }
+</span>#endif
+  }
+</span>}
+</span>
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

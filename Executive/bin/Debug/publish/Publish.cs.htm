@@ -1,0 +1,392 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+/////////////////////////////////////////////////////////////////////////////////
+// Publish.cs - handles conversion to html for single file                    //
+//              Author:Mukund Narayana Murthy SUID:50361-4612               //
+// Source :Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2011//
+///////////////////////////////////////////////////////////////////////////
+
+<span class="manpage">
+/*
+ * Module Operations:
+ * ------------------
+ * This module defines the following class:
+ *   Publish  - a collection functions Used  to PUBLISH source Code Files to HTML Pages.
+ * 
+ * Functions List:
+ * --------------
+ * 1)SetTemplate()    -- Sets the value of the Template.htm Path for the final HTML published Page
+ * 
+ * 2)GetTemplate()    -- Get the value of the Template.htm path to be used by the Inserter
+ * 
+ * 3)SetPubDir()      -- Sets the value of the PUblished Directory.
+ * 
+ * 4)GetPubDir()      -- Get the value of the Published Directory.
+ * 
+ * 5)SetDupDir()      -- Sets the value of the Duplicate Directory (a temporary file store into which Span Tags would get inserted)
+ * 
+ * 6)GetDupDir()      -- Get the value of the  Duplicate Directory.
+ * 
+ * 7)makePage(FileInfo file,DirectoryInfo di) -- A function responsible to Publish one source code file at a time.
+ * 
+ * 8)CreateDirList(DirectoryInfo di)  -- A funtion Responsible to create a directory listing of all the published files
+ * 
+ * 9)List&lt;CodeAnalysis.Elem&gt; Locate(FileInfo f)   -- A function used to locate the begin and end of Types in the Source Code File.
+ * 
+ * 10)FileInfo Spans(List&lt;CodeAnalysis.Elem&gt; e,FileInfo f) -- A function that Iterates through the File line by line inorder to Insert Spans.
+ * 
+ * 11)InsertSpans(List&lt;CodeAnalysis.Elem&gt; e, ref int count, ref int StartFlag, ref int EndFLag, ref string Ospan, 
+ * ref string line, string Mspan, StreamReader sr, StreamWriter sw) -- Inserts Spans at appropriate Locations in the Duplicate File
+ * 
+ * 12)WriteLines(string Ospan, int flag1,int flag2, string line, StreamWriter sw) -- Writes lines from the file as per the Inserted Span Tags.
+ * 
+ * 13)CopyResources(DirectoryInfo di) -- Copies the JavaScript and CSS file resources needed by the Published Html pages into 
+ * the respective JS and CSS directories 
+ */
+/* 
+ * 
+ * Required Files: 
+ * ===============
+ * -----------------------------
+ * Module            File Names
+ * -----------------------------       
+ * Locator      --   IRulesandAction.cs,Parser.cs,RulesandActions.cs,ScopeStack.cs,Semi.cs,Toker.cs  
+ * TextInserter --   Inserter.cs,Publish.cs
+ *   
+ *   
+ * Maintenance History:
+ * --------------------
+ * Version 1.0 Release 10/10/2011.
+ * 
+ * 
+ *  
+ */
+</span>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+<span class="namespace">namespace Project2
+</span><span>{
+<span class="class">    public class Publish
+</span><span>    {
+     string template;
+     string PubDir;
+     string DupDir;
+<span class="function">         public void setTemplate(string templfile)
+</span><span>         {
+            template = templfile;
+         }
+</span>
+<span class="function">         public string getTemplate()
+</span><span>         {
+             return template;
+         }
+</span><span class="function">         public void setPubDir(string path)
+</span><span>         {
+             PubDir = path;
+         }
+</span>
+<span class="function">        public string getPubDir()
+</span><span>        {
+            return PubDir;
+        }   
+</span>
+
+      //////////////////////////////////////////////////////////////////
+     //Sets the Duplicate Directory of Source Code Files in which &lt;span&gt; 
+    //tags are inserted before getting Published
+   //////////////////////////////////////////////////////////////////// 
+    
+<span class="function">        public void setDupDir(string dupfile)
+</span><span>        {
+            DupDir = dupfile;
+        }
+</span>
+    //Get Duplicate Files Directory.
+
+<span class="function">        public string getDupDir()
+</span><span>        {
+            return DupDir;
+        }
+</span>      
+   //Publishes one source Code File at a time.
+
+<span class="function">        public void makePage(FileInfo file,DirectoryInfo di)
+</span><span>        {
+          // call to TextInserter to create a Clickable webpage.
+        
+            Inserter Ins = new Inserter();
+            Ins.TextInsertion(getTemplate(), file.FullName,di.Name + &quot;\\&quot; + file.Name + &quot;.htm&quot;);
+    
+        }
+</span>
+<span class="function">        public void CreateDirList( DirectoryInfo di)
+</span><span>        {
+            string Line = &quot;&lt;html&gt;&quot; + &quot;&lt;head&gt;&quot; + &quot;&lt;title&gt;Directory Listing &lt;/title&gt;&quot; + &quot;&lt;/head&gt;&quot; + &quot;&lt;body&gt;&quot; + &quot;&lt;table&gt;&quot;;
+        
+            TextWriter tw = new StreamWriter(di.FullName + &quot;\\dirlist.htm&quot;);
+            tw.WriteLine(Line);
+            //Get the list of html files in the Published Directory
+            FileInfo[] files=di.GetFiles(&quot;*.htm&quot;);
+      
+                foreach (FileInfo f in files)
+                {
+                    Line= &quot;&lt;tr&gt;&lt;th&gt;&quot; + &quot;&lt;a href=&quot; +f.Name +&quot;&gt;&quot; + f.Name+ &quot;&lt;/a&gt;&quot; + &quot;&lt;/th&gt;&lt;th&gt;&quot; + f.Length + 
+                        &quot;&lt;/th&gt;&quot; + &quot;&lt;th&gt;&quot; + f.CreationTime + &quot;&lt;/th&gt;&lt;/tr&gt;&quot;;
+                    tw.WriteLine(Line);
+                }   
+        
+                    Line = &quot;&lt;/table&gt;&quot; + &quot;&lt;/body&gt;&quot; + &quot;&lt;/html&gt;&quot;;
+                    tw.WriteLine(Line);
+                    tw.Close();
+        
+                    DirectoryInfo dup=new DirectoryInfo(getDupDir());
+                    FileInfo[] dupfiles = dup.GetFiles(&quot;*.cs&quot;);
+                foreach (FileInfo d in dupfiles)
+                {
+                    try
+                    {
+                        d.Delete();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(&quot;An error occured: &quot; + ex.Message);
+                        return;
+                    }
+                }
+                    CopyResources(di); 
+        }
+</span>    
+       ///////////////////////////////////////////////////////////////////////////////
+      //Locate does the job of locating the namespaces,functions and Class ranges.  //
+    //It returns Table containing inforamtion about the Type,Name Begin Line and    //
+     //Ending Lines of the above mentioned ranges.                                // 
+     /////////////////////////////////////////////////////////////////////////////
+
+<span class="function">        public List&lt;CodeAnalysis.Elem&gt; Locate(FileInfo file)
+</span><span>        {
+            CSsemi.CSemiExp semi = new CSsemi.CSemiExp();
+            semi.displayNewLines = false;
+            
+            if (!semi.open(file.FullName as string))
+             {
+               return null;
+             }
+                CodeAnalysis.BuildCodeAnalyzer builder = new CodeAnalysis.BuildCodeAnalyzer(semi);
+                CodeAnalysis.Parser par = builder.build();
+
+                while (semi.getSemi())
+                par.parse(semi);
+                CodeAnalysis.Repository Rep = CodeAnalysis.Repository.getInstance();
+            
+                //Store the Begin,End locations alone with Name and Type Information
+                List&lt;CodeAnalysis.Elem&gt; table = Rep.locations;
+                semi.close();
+                return Rep.locations;
+        }
+</span>
+      //Funciton that Inserts the Span tags in the Duplicate copies of the Source Code files before 
+      //passing the to MakePage for publishing
+<span class="function">        public FileInfo Spans(List&lt;CodeAnalysis.Elem&gt; e,FileInfo f)
+</span><span>        {   
+            int count = 0,StartFlag=0,EndFLag=0,Mflag=0;
+            string Ospan, line, Mspan = &quot;&lt;span class=\&quot;&quot; + &quot;manpage&quot; + &quot;\&quot;&gt;&quot;;
+            StreamReader sr = null;
+            
+            StreamWriter sw = null;
+                try
+                {   
+                    sr = new StreamReader(f.FullName);
+                    sw = new StreamWriter(DupDir + &quot;\\&quot; + f.Name);            
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(&quot;An error occured: &quot; + ex.Message);
+                    return null;
+                }
+                FileInfo dupFile = new FileInfo(DupDir + &quot;\\&quot; + f.Name);    //Get Duplicate File  
+                
+                do
+                {
+                    Mflag=StartFlag = EndFLag = 0;
+                    Ospan = &quot;&lt;span class=\&quot;&quot;;
+                    line = sr.ReadLine();
+                    line = System.Net.WebUtility.HtmlEncode(line);
+                    count++;
+                    InsertSpans(e, ref count, ref StartFlag, ref EndFLag, ref Ospan, ref line, Mspan, sr, sw);
+                        if((StartFlag==0)&amp;&amp;(EndFLag==0))
+                        sw.WriteLine(line);
+                } while (line!=null);
+                sr.Close();
+                sw.Close();
+                return dupFile; //To be used by the MakePage inorder to Publish the SOURCE CODE files one by one
+        }
+</span>
+        // Inserts Span Tags as per the specified locations from the List&lt;CodeAnalysis.Elem&gt; Table //
+        
+<span class="function">        private void InsertSpans(List&lt;CodeAnalysis.Elem&gt; e, ref int count, ref int StartFlag, ref int EndFLag, ref string Ospan, ref string line, string Mspan, StreamReader sr, StreamWriter sw)
+</span><span>        {
+            foreach (CodeAnalysis.Elem m in e)
+            {
+                if (line != null &amp;&amp; line.Contains(&quot;/*&quot;) &amp;&amp; count &lt; e[0].begin)// Check For Beginnning of ManPages to insert Spans
+                {
+                    sw.WriteLine(Mspan);
+                    while (!line.Contains(&quot;using System&quot;))
+                    {
+                        sw.WriteLine(line);
+                        count++;
+                        line = sr.ReadLine();
+                        line = System.Net.WebUtility.HtmlEncode(line);
+                    }
+                    sw.WriteLine(&quot;&lt;/span&gt;&quot;);
+                    break;
+                }
+                else if (count == m.begin) //Check for Beginning of Namespaces/Classes/Functions 
+                {
+                    Ospan += m.type + &quot;\&quot;&gt;&quot;;
+                    StartFlag = 1;
+                    WriteLines(Ospan, StartFlag, EndFLag, line, sw);
+                    break;
+                }
+                else if (count == m.end) //Check for Endings of Namespaces/Classes/Functions 
+                {
+                    EndFLag = 1;
+                    WriteLines(Ospan, StartFlag, EndFLag, line, sw);
+                    break;
+                }
+            } //Foreach loop ends here.
+        }
+</span>
+<span class="function">        public void WriteLines(string Ospan, int flag1,int flag2, string line, StreamWriter sw)
+</span><span>        {
+            string Cspan = &quot;&lt;/span&gt;&lt;span&gt;&quot;;
+            string Espan = &quot;&lt;/span&gt;&quot;;
+                if (flag1 == 1)
+                {
+                    sw.Write(Ospan);
+                    sw.WriteLine(line);
+                    sw.Write(Cspan);        
+                }
+                else if (flag2 == 1)
+                {
+                    sw.WriteLine(line);
+                    sw.Write(Espan);
+                }      
+        }//Writelines Function Ends
+</span>
+<span class="function">        public void CopyResources(DirectoryInfo di)// Copy resources of JavaScript and CSS to be used by the HTML files
+</span><span>        {
+            if (!di.CreateSubdirectory(&quot;CSS&quot;).Exists)
+            {
+                di.CreateSubdirectory(&quot;CSS&quot;);
+            }
+            if (!di.CreateSubdirectory(&quot;js&quot;).Exists)
+            {
+                di.CreateSubdirectory(&quot;js&quot;);
+
+            }
+            DirectoryInfo Res = new DirectoryInfo(&quot;../../Resources&quot;);
+            FileInfo[] Resources = Res.GetFiles();
+
+            foreach (FileInfo f in Resources)
+            {
+                if (f.Extension == &quot;.js&quot;)
+                {
+                    f.CopyTo(di.FullName + &quot;\\&quot; + &quot;js&quot; + &quot;\\&quot; + f.Name,true);
+                }
+                if (f.Extension == &quot;.css&quot;)
+                {
+                    f.CopyTo(di.FullName + &quot;\\&quot; + &quot;CSS&quot; + &quot;\\&quot; + f.Name,true);
+                }
+            }
+        }
+</span>
+
+#if(TEST_PUBLISHER)
+<span class="function">        static void Main(string[] args)
+</span><span>        {
+            Console.Write(&quot;\n Testing Text Inserter And Publisher&quot;);
+            Console.Write(&quot;\n ======================\n&quot;);
+            DirectoryInfo di, di1;
+            Publish pub = new Publish();
+            pub.setPubDir(&quot;./publish&quot;);
+            pub.setDupDir(&quot;./duplicate&quot;);
+            pub.setTemplate(&quot;../../Resources/template.htm&quot;);
+
+                   if (!Directory.Exists(pub.getPubDir()))
+                        di = Directory.CreateDirectory(pub.getPubDir());
+                   else
+                        di = new DirectoryInfo(pub.getPubDir());
+            
+            pub.getDupDir();
+            Console.WriteLine(di);
+                    if (!Directory.Exists(pub.getDupDir()))
+                        di1 = Directory.CreateDirectory(pub.getDupDir());
+                    else
+                        di1 = new DirectoryInfo(pub.getDupDir());
+                    
+            Console.WriteLine(di1);
+            FileInfo f = new FileInfo(&quot;../../Publish.cs&quot;);
+            
+            List&lt;CodeAnalysis.Elem&gt; table=pub.Locate(f);
+
+            FileInfo dupFile=pub.Spans(table, f);
+
+            StreamReader sr = new StreamReader(dupFile.FullName);
+
+            string line = sr.ReadToEnd();
+            Console.WriteLine(line);
+
+                    if (dupFile != null)
+                    {
+                        pub.makePage(dupFile, di);
+                    }
+            sr.Close();
+            pub.CreateDirList(di);
+            Console.WriteLine(&quot;File Published in the following directory:&quot;);
+            Console.WriteLine(&quot;===========================================&quot;);
+            Console.WriteLine(pub.getPubDir());
+            Console.WriteLine(&quot;===========================================&quot;);
+        }
+</span>#endif
+  }
+</span>}
+</span>
+
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

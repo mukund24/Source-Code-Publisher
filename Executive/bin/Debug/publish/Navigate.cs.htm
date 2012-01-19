@@ -1,0 +1,141 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+///////////////////////////////////////////////////////////////////////
+///  Navigate.cs - Navigates a Directory Subtree, displaying files  ///
+///  ver 1.2       and some of their properties                     ///
+///                                                                 ///
+///  Language:     Visual C#                                        ///
+///  Platform:     Dell Dimension 8100, Windows Pro 2000, SP2       ///
+///  Application:  CSE681 Example                                   ///
+///  Author:       Jim Fawcett, CST 2-187, Syracuse Univ.           ///
+///                (315) 443-3948, jfawcett@twcny.rr.com            ///
+///////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ *  Module Operations:
+ *  ==================
+ *  Recursively displays the contents of a directory tree
+ *  rooted at a specified path, with specified file pattern.
+ *
+ *  Public Interface:
+ *  =================
+ *  Navigate nav = new Navigate();
+ *  nav.go(&quot;c:\temp&quot;,&quot;*.cs&quot;);
+ * 
+ *  Maintenance History:
+ *  ====================
+ *  ver 2.0 : 15 Sep 11
+ *  - converted go to a non-static member function so it can access
+ *    a List&lt;string&gt; data member
+ *  - added private List&lt;string&gt; member to store all the files
+ *    found in all searched directories (stores fully qualified names)
+ *  - callers now need to create a Navigate nav object to use function go
+ *  - added function List&lt;string&gt; getSources() to retrieve the file specs
+ *  ver 1.2 : 10 Sep 11
+ *  - removed unnecessary SetCurrentDirectory in Navigate.go()
+ *  ver 1.1 : 04 Sep 06
+ *  - added file pattern as argument to member function go()
+ *  ver 1.0 : 05 Sep 05
+ *  - first release
+ */
+
+</span>
+using System;
+using System.IO;
+using System.Collections.Generic;
+
+<span class="namespace">namespace Project2
+</span><span>{
+<span class="class">      public class Navigate
+</span><span>      {
+        List&lt;string&gt; sourceCode = new List&lt;string&gt;();
+
+<span class="function">        public List&lt;string&gt; getSources()
+</span><span>        {
+          return sourceCode;
+        }
+</span><span class="function">        public void go(string path, string pattern)
+</span><span>        {
+          path = Path.GetFullPath(path);
+
+          // get all files in this directory and save them
+          try
+          {
+              string[] files = Directory.GetFiles(path, pattern);
+              sourceCode.AddRange(files);
+              string[] dirs = Directory.GetDirectories(path);
+              foreach (string dir in dirs)
+                  go(dir, pattern);
+          
+          }
+          catch
+          {
+              return;
+          }
+        }
+</span>
+    #if (TEST_NAVIGATE)
+<span class="function">        static void Main(string[] args)
+</span><span>        {
+
+            Console.WriteLine(&quot;\nTesting FILE FINDER&quot;);
+            Console.WriteLine(&quot;====================\n&quot;);
+
+            string path;
+            int count=0;
+                if (args.Length &gt; 0)
+                    path = args[0];
+                else
+                    path = Directory.GetCurrentDirectory();
+
+            Navigate nav = new Navigate();
+            nav.go(path, &quot;*.cs&quot;);
+
+            List&lt;string&gt; files = nav.getSources(); // fully qualified filenames
+
+                foreach (string file in files)
+                { 
+                    count++;
+                    Console.WriteLine(&quot;Processing file&quot; + &quot;  &quot; + count+ &quot;  &quot; + file);
+                    Console.WriteLine(&quot;&quot;);
+                }
+   
+        }
+</span>    #endif
+  }
+</span>}
+</span>
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

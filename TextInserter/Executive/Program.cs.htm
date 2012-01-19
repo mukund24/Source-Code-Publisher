@@ -1,0 +1,73 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>Project #1 Prototype</title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+///////////////////////////////////////////////////////////////////////
+// Program.cs - Demo inserting one file into the body of another     //
+//                                                                   //
+// Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2011   //
+///////////////////////////////////////////////////////////////////////
+/*
+ * Makes reference to VisualStudioDemo-Fall11 project
+ *
+ */
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Executive
+{
+  class Program
+  {
+    static void Main(string[] args)
+    {
+      Console.Write("\n  Demonstrating Text Insertion");
+      Console.Write("\n ==============================\n");
+
+      if (args.GetLength(0) < 3)
+      {
+        Console.Write(
+          "\n  Please enter name of template, inserted, and to file names\n\n"
+        );
+        return;
+      }
+      VisualStudioDemo_Fall11.Inserter insrtr 
+        = new VisualStudioDemo_Fall11.Inserter();
+      insrtr.TextInsertion(args[0], args[1], args[2]);
+    }
+  }
+}
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

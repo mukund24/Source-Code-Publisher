@@ -1,0 +1,6 @@
+int i;
+// a C++ comment
+double d;
+char ch = '\n';
+string s = "\n";
+this is a final line with one semiExp; followed by some text

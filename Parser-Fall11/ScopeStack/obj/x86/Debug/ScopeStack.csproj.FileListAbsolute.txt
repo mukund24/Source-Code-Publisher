@@ -1,0 +1,5 @@
+C:\su\CSE681\code\Parser-Fall11\ScopeStack\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\su\CSE681\code\Parser-Fall11\ScopeStack\bin\Debug\ScopeStack.exe
+C:\su\CSE681\code\Parser-Fall11\ScopeStack\bin\Debug\ScopeStack.pdb
+C:\su\CSE681\code\Parser-Fall11\ScopeStack\obj\x86\Debug\ScopeStack.exe
+C:\su\CSE681\code\Parser-Fall11\ScopeStack\obj\x86\Debug\ScopeStack.pdb

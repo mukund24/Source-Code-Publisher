@@ -1,0 +1,481 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+///////////////////////////////////////////////////////////////////////
+// RulesAndActions.cs - Parser rules specific to an application      //
+// ver 1.0                                                           //
+// Language:    C#, 2008, .Net Framework 4.0                         //
+// Platform:    Dell Precision T7400, Win7, SP1                      //
+// Application: Demonstration for CSE681, Project #2, Fall 2011      //
+// Author:      Jim Fawcett, CST 4-187, Syracuse University          //
+//              (315) 443-3948, jfawcett@twcny.rr.com                //
+///////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ * Package Operations:
+ * -------------------
+ * RulesAndActions package contains all of the Application specific
+ * code required for most analysis tools.
+ *
+ * It defines the following Four rules which each have a
+ * grammar construct detector and also a collection of IActions:
+ *   - DetectNameSpace rule
+ *   - DetectClass rule
+ *   - DetectFunction rule
+ *   - DetectScopeChange
+ *   
+ *   Three actions - some are specific to a parent rule:
+ *   - Print
+ *   - PrintFunction
+ *   - PrintScope
+ * 
+ * The package also defines a Repository class for passing data between
+ * actions and uses the services of a ScopeStack, defined in a package
+ * of that name.
+ *
+ * Note:
+ * This package does not have a test stub since it cannot execute
+ * without requests from Parser.
+ *  
+ */
+/* Required Files:
+ *   IRuleAndAction.cs, RulesAndActions.cs, Parser.cs, ScopeStack.cs, Semi.cs, Toker.cs
+ *   
+ * Build command:
+ *   csc /D:TEST_PARSER Parser.cs IRuleAndAction.cs RulesAndActions.cs ScopeStack.cs Semi.cs Toker.cs
+ *   
+ * Maintenance History:
+ * --------------------
+ * ver 2.0 : 05 Sep 2011
+ * - removed old stack and added scope stack
+ * - added Repository class that allows actions to save and 
+ *   retrieve application specific data
+ * - added rules and actions specific to Project #2, Fall 2010
+ * ver 1.1 : 05 Sep 11
+ * - added Repository and references to ScopeStack
+ * - revised actions
+ * - thought about added folding rules
+ * ver 1.0 : 28 Aug 2011
+ * - first release
+ *
+ * Planned Modifications (not needed for Project #2):
+ * --------------------------------------------------
+ * - add folding rules:
+ *   - CSemiExp returns for(int i=0; i&lt;len; ++i) { as three semi-expressions, e.g.:
+ *       for(int i=0;
+ *       i&lt;len;
+ *       ++i) {
+ *     The first folding rule folds these three semi-expression into one, passed to parser.
+ *   - CToker returns operator[]( as four distinct tokens, e.g.: operator, [, ], (.  The
+ *     second folding rule coalesces the first three into one token so we get:
+ *     operator[], ( 
+ */
+</span>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+
+<span class="namespace">namespace CodeAnalysis
+</span><span>{
+<span class="class">  public class Elem  // holds scope information
+</span><span>  {
+    public string type { get; set; }
+    public string name { get; set; }
+    public int begin { get; set; }
+    public int end { get; set; }
+
+<span class="function">    public override string ToString()
+</span><span>    {
+      StringBuilder temp = new StringBuilder();
+      temp.Append(&quot;{&quot;);
+      temp.Append(String.Format(&quot;{0,-10}&quot;, type)).Append(&quot; : &quot;);
+      temp.Append(String.Format(&quot;{0,-10}&quot;, name)).Append(&quot; : &quot;);
+      temp.Append(String.Format(&quot;{0,-5}&quot;, begin.ToString()));  // line of scope start
+      temp.Append(String.Format(&quot;{0,-5}&quot;, end.ToString()));    // line of scope end
+      temp.Append(&quot;}&quot;);
+      return temp.ToString();
+    }
+</span>  }
+</span>
+<span class="class">  public class Repository
+</span><span>  {
+    ScopeStack&lt;Elem&gt; stack_ = new ScopeStack&lt;Elem&gt;();
+    List&lt;Elem&gt; locations_ = new List&lt;Elem&gt;();
+    static Repository instance;
+
+<span class="function">    public Repository()
+</span><span>    {
+      instance = this;
+    }
+</span>
+<span class="function">    public static Repository getInstance()
+</span><span>    {
+      return instance;
+    }
+</span>    // provides all actions access to current semiExp
+
+    public CSsemi.CSemiExp semi
+    {
+      get;
+      set;
+    }
+
+    // semi gets line c ount from toker who counts lines
+    // while reading from its source
+
+    public int lineCount  // saved by newline rule&#39;s action
+    {
+      get { return semi.lineCount; }
+    }
+    public int prevLineCount  // not used in this demo
+    {
+      get;
+      set;
+    }
+    // enables recursively tracking entry and exit from scopes
+
+    public ScopeStack&lt;Elem&gt; stack  // pushed and popped by scope rule&#39;s action
+    {
+      get { return stack_; } 
+    }
+    // the locations table is the result returned by parser&#39;s actions
+    // in this demo
+
+    public List&lt;Elem&gt; locations
+    {
+      get { return locations_; }
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // pushes scope info on stack when entering new scope
+
+<span class="class">  public class PushStack : AAction
+</span><span>  {
+    Repository repo_;
+
+<span class="function">    public PushStack(Repository repo)
+</span><span>    {
+      repo_ = repo;
+    }
+</span><span class="function">    public override void doAction(CSsemi.CSemiExp semi)
+</span><span>    {
+      Elem elem = new Elem();
+      elem.type = semi[0];  // expects type
+      elem.name = semi[1];  // expects name
+      elem.begin = repo_.semi.lineCount - 1;
+      repo_.stack.push(elem);
+      if (elem.type == &quot;control&quot; || elem.name == &quot;anonymous&quot;)
+        return;
+      repo_.locations.Add(elem);
+
+      if (AAction.displaySemi)
+      {
+        Console.Write(&quot;\n  line# {0,-5}&quot;, repo_.semi.lineCount - 1);
+        Console.Write(&quot;entering &quot;);
+        string indent = new string(&#39; &#39;, 2 * repo_.stack.count);
+        Console.Write(&quot;{0}&quot;, indent);
+        this.display(semi); // defined in abstract action
+      }
+      if(AAction.displayStack)
+        repo_.stack.display();
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // pops scope info from stack when leaving scope
+
+<span class="class">  public class PopStack : AAction
+</span><span>  {
+    Repository repo_;
+
+<span class="function">    public PopStack(Repository repo)
+</span><span>    {
+      repo_ = repo;
+    }
+</span><span class="function">    public override void doAction(CSsemi.CSemiExp semi)
+</span><span>    {
+      Elem elem;
+      try
+      {
+        elem = repo_.stack.pop();
+        for (int i = 0; i &lt; repo_.locations.Count; ++i )
+        {
+          Elem temp = repo_.locations[i];
+          if (elem.type == temp.type)
+            if (elem.name == temp.name)
+              (repo_.locations[i]).end = repo_.semi.lineCount;
+        }
+      }
+      catch
+      {
+        Console.Write(&quot;popped empty stack on semiExp: &quot;);
+        semi.display();
+        return;
+      }
+      CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+      local.Add(elem.type).Add(elem.name);
+      if(local[0] == &quot;control&quot;)
+        return;
+
+      if (AAction.displaySemi)
+      {
+        Console.Write(&quot;\n  line# {0,-5}&quot;, repo_.semi.lineCount);
+        Console.Write(&quot;leaving  &quot;);
+        string indent = new string(&#39; &#39;, 2 * (repo_.stack.count + 1));
+        Console.Write(&quot;{0}&quot;, indent);
+        this.display(local); // defined in abstract action
+      }
+    }
+  }
+</span>  ///////////////////////////////////////////////////////////
+  // action to print function signatures - not used in demo
+
+<span class="class">  public class PrintFunction : AAction
+</span><span>  {
+    Repository repo_;
+
+<span class="function">    public PrintFunction(Repository repo)
+</span><span>    {
+      repo_ = repo;
+    }
+</span><span class="function">    public override void display(CSsemi.CSemiExp semi)
+</span><span>    {
+      Console.Write(&quot;\n    line# {0}&quot;, repo_.semi.lineCount - 1);
+      Console.Write(&quot;\n    &quot;);
+      for (int i = 0; i &lt; semi.count; ++i)
+        if (semi[i] != &quot;\n&quot; &amp;&amp; !semi.isComment(semi[i]))
+          Console.Write(&quot;{0} &quot;, semi[i]);
+    }
+</span><span class="function">    public override void doAction(CSsemi.CSemiExp semi)
+</span><span>    {
+      this.display(semi);
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // concrete printing action, useful for debugging
+
+<span class="class">  public class Print : AAction
+</span><span>  {
+    Repository repo_;
+
+<span class="function">    public Print(Repository repo)
+</span><span>    {
+      repo_ = repo;
+    }
+</span><span class="function">    public override void doAction(CSsemi.CSemiExp semi)
+</span><span>    {
+      Console.Write(&quot;\n  line# {0}&quot;, repo_.semi.lineCount - 1);
+      this.display(semi);
+    }
+</span>  }
+</span>  /////////////////////////////////////////////////////////
+  // rule to detect namespace declarations
+
+<span class="class">  public class DetectNamespace : ARule
+</span><span>  {
+<span class="function">    public override bool test(CSsemi.CSemiExp semi)
+</span><span>    {
+      int index = semi.Contains(&quot;namespace&quot;);
+      if (index != -1)
+      {
+        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+        // create local semiExp with tokens for type and name
+        local.displayNewLines = false;
+        local.Add(semi[index]).Add(semi[index + 1]);
+        doActions(local);
+        return true;
+      }
+      return false;
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // rule to dectect class definitions
+
+<span class="class">  public class DetectClass : ARule
+</span><span>  {
+<span class="function">    public override bool test(CSsemi.CSemiExp semi)
+</span><span>    {
+      int indexCL = semi.Contains(&quot;class&quot;);
+      int indexIF = semi.Contains(&quot;interface&quot;);
+      int indexST = semi.Contains(&quot;struct&quot;);
+
+      int index = Math.Max(indexCL, indexIF);
+      index = Math.Max(index, indexST);
+      if (index != -1)
+      {
+        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+        // local semiExp with tokens for type and name
+        local.displayNewLines = false;
+        local.Add(semi[index]).Add(semi[index + 1]);
+        doActions(local);
+        return true;
+      }
+      return false;
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // rule to dectect function definitions
+
+<span class="class">  public class DetectFunction : ARule
+</span><span>  {
+    //private Stack scope_;
+    //public DetectFunction(Stack scope)
+    //{
+    //  scope_ = scope;
+    //}
+<span class="function">    public static bool isSpecialToken(string token)
+</span><span>    {
+      string[] SpecialToken = { &quot;if&quot;, &quot;for&quot;, &quot;foreach&quot;, &quot;while&quot;, &quot;catch&quot; };
+      foreach (string stoken in SpecialToken)
+        if (stoken == token)
+          return true;
+      return false;
+    }
+</span><span class="function">    public override bool test(CSsemi.CSemiExp semi)
+</span><span>    {
+      if (semi[semi.count - 1] != &quot;{&quot;)
+        return false;
+
+      // strip off leading #if(TEST_XYZ) if it&#39;s in this semi
+
+      if (semi.FindFirst(&quot;#&quot;) != -1)
+      {
+        int loc = semi.FindFirst(&quot;)&quot;);
+        for (int i = 0; i &lt;= loc; ++i)
+          semi.remove(0);
+      }
+      // now find function
+
+      int index = semi.FindFirst(&quot;(&quot;);
+      if (index &gt; 0 &amp;&amp; !isSpecialToken(semi[index - 1]))
+      {
+        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+        local.Add(&quot;function&quot;).Add(semi[index - 1]);
+        doActions(local);
+        return true;
+      }
+      return false;
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // detect entering anonymous scope
+  // - expects namespace, class, and function scopes
+  //   already handled, so put this rule after those
+<span class="class">  public class DetectAnonymousScope : ARule
+</span><span>  {
+<span class="function">    public override bool test(CSsemi.CSemiExp semi)
+</span><span>    {
+      int index = semi.Contains(&quot;{&quot;);
+      if (index != -1)
+      {
+        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+        // create local semiExp with tokens for type and name
+        local.displayNewLines = false;
+        local.Add(&quot;control&quot;).Add(&quot;anonymous&quot;);
+        doActions(local);
+        return true;
+      }
+      return false;
+    }
+  }
+</span>  /////////////////////////////////////////////////////////
+  // detect leaving scope
+
+<span class="class">  public class DetectLeavingScope : ARule
+</span><span>  {
+<span class="function">    public override bool test(CSsemi.CSemiExp semi)
+</span><span>    {
+      int index = semi.Contains(&quot;}&quot;);
+      if (index != -1)
+      {
+        doActions(semi);
+        return true;
+      }
+      return false;
+    }
+</span>  }
+</span><span class="class">  public class BuildCodeAnalyzer
+</span><span>  {
+    Repository repo = new Repository();
+
+<span class="function">    public BuildCodeAnalyzer(CSsemi.CSemiExp semi)
+</span><span>    {
+      repo.semi = semi;
+    }
+</span><span class="function">    public virtual Parser build()
+</span><span>    {
+      Parser parser = new Parser();
+
+      // decide what to show
+      AAction.displaySemi = true;
+      AAction.displayStack = false;  // this is default so redundant
+
+      // action used for namespaces, classes, and functions
+      PushStack push = new PushStack(repo);
+
+      // capture namespace info
+      DetectNamespace detectNS = new DetectNamespace();
+      detectNS.add(push);
+      parser.add(detectNS);
+
+      // capture class info
+      DetectClass detectCl = new DetectClass();
+      detectCl.add(push);
+      parser.add(detectCl);
+
+      // capture function info
+      DetectFunction detectFN = new DetectFunction();
+      detectFN.add(push);
+      parser.add(detectFN);
+
+      // handle entering anonymous scopes, e.g., if, while, etc.
+      DetectAnonymousScope anon = new DetectAnonymousScope();
+      anon.add(push);
+      parser.add(anon);
+
+      // handle leaving scopes
+      DetectLeavingScope leave = new DetectLeavingScope();
+      PopStack pop = new PopStack(repo);
+      leave.add(pop);
+      parser.add(leave);
+
+      // parser configured
+      return parser;
+    }
+</span>  }
+</span>}
+</span>
+
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

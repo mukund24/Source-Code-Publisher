@@ -1,0 +1,224 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+/////////////////////////////////////////////////////////////////////////
+// ScopeStack.cs  -  Generic stack to help with static analysis        //
+//                   Holds application specific Element type           //
+// ver 1.0                                                             //
+// Language:    C#, Visual Studio 10.0, .Net Framework 4.0             //
+// Platform:    Dell Precision T7400 , Win 7, SP 1                     //
+// Application: Pr#2 Help, CSE681, Fall 2011                           //
+// Author:      Jim Fawcett, CST 2-187, Syracuse University            //
+//              (315) 443-3948, jfawcett@twcny.rr.com                  //
+/////////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ * Package Operations
+ * ==================
+ * ScopeStack provides, via the class ScopeStack, the facilities to 
+ * track position in code scope by pushing and popping type, name, and
+ * place.  The type might be a namespace, class, struct, function, or
+ * control.  The name is the namespace of the instance of that type,
+ * and place is the line number in a package being analyzed.
+ * 
+ * Public Interface
+ * ================
+ * ScopeStack sstk = new ScopeStack();  // constructs ScopeStack object
+ * E elem = new E(); elem.type = &quot;xyz&quot;, elem.name = &quot;tuv&quot;, elem.place = 53;
+ * sstk.push(e);                        // sstk now holds that element
+ * E e = sstk.pop();                    // pops element off stack into e
+ * int size = sstk.count;               // number of elements on sstk
+ * E e = sstk[3];                       // peering inside stack
+ * sstk.display();                      // puts vertical list of elements on console
+ *                                      //   using E.ToString()
+ */
+/*
+ * Build Process
+ * =============
+ * Required Files:
+ *   ScopeStack.cs
+ * 
+ * Compiler Command:
+ *   csc /target:exe /define:TEST_SCOPESTACK ScopeStack.cs
+ * 
+ * Maintenance History
+ * ===================
+ * ver 1.0 : 05 Sep 11
+ *   - first release
+ * 
+ */
+//
+</span>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+<span class="namespace">namespace CodeAnalysis
+</span><span>{
+<span class="class">  public class ScopeStack&lt;E&gt;
+</span><span>  {
+    List&lt;E&gt; stack_ = new List&lt;E&gt;();
+    E lastPopped_;
+
+    //----&lt; push element onto stack &gt;------------------------------------
+
+<span class="function">    public void push(E elem)
+</span><span>    {
+      stack_.Add(elem);
+    }
+</span>    //----&lt; pop element off of stack &gt;-----------------------------------
+
+<span class="function">    public E pop()
+</span><span>    {
+      int len = stack_.Count;
+      if (len == 0)
+        throw new Exception(&quot;empty scope stack&quot;);
+      E elem = stack_[len - 1];
+      stack_.RemoveAt(len - 1);
+      lastPopped_ = elem;
+      return elem;
+    }
+</span>    //----&lt; remove all elements from stack &gt;-----------------------------
+
+<span class="function">    public void clear()
+</span><span>    {
+      stack_.Clear();
+    }
+</span>    //----&lt; index into stack contents &gt;----------------------------------
+
+    public E this[int i]
+    {
+      get
+      {
+        if (i &lt; 0 || stack_.Count &lt;= i)
+          throw new Exception(&quot;scope stack index out of range&quot;);
+        return stack_[i];
+      }
+      set
+      {
+        if (i &lt; 0 || stack_.Count &lt;= i)
+          throw new Exception(&quot;scope stack index out of range&quot;);
+        stack_[i] = value;
+      }
+    }
+    //----&lt; number of elements on stack property &gt;-----------------------
+
+    public int count
+    {
+      get { return stack_.Count; }
+    }
+    //----&lt; get lastPopped &gt;---------------------------------------------
+
+<span class="function">    public E lastPopped()
+</span><span>    {
+      return lastPopped_;
+    }
+</span>    //----&lt; display using element ToString() method() &gt;------------------
+
+<span class="function">    public void display()
+</span><span>    {
+      for (int i = 0; i &lt; count; ++i)
+      {
+        Console.Write(&quot;\n  {0}&quot;,stack_[i].ToString());
+      }
+    }
+</span>  }
+</span>
+<span class="class">  class Test
+</span><span>  {
+<span class="struct">    public struct Elem 
+</span><span>    {
+      public string type;
+      public string name;
+      public int place;
+<span class="function">      public void make(string tp, string nm, int pl)
+</span><span>      {
+        type = tp;
+        name = nm;
+        place = pl;
+      }
+</span><span class="function">      public override string ToString()
+</span><span>      {
+        StringBuilder temp = new StringBuilder();
+        temp.Append(&quot;{&quot;);
+        temp.Append(String.Format(&quot;{0,-10}&quot;,type)).Append(&quot; : &quot;);
+        temp.Append(String.Format(&quot;{0,-10}&quot;,name)).Append(&quot; : &quot;);
+        temp.Append(String.Format(&quot;{0,-5}&quot;,place.ToString()));
+        temp.Append(&quot;}&quot;);
+        return temp.ToString();
+      }
+</span>    };
+</span>
+#if(TEST_SCOPESTACK)
+<span class="function">    static void Main()
+</span><span>    {
+      Console.Write(&quot;\n  Test ScopeStack&quot;);
+      Console.Write(&quot;\n =================\n&quot;);
+
+      ScopeStack&lt;Elem&gt; mystack = new ScopeStack&lt;Elem&gt;();
+      Test.Elem e;
+      e.type = &quot;namespace&quot;;
+      e.name = &quot;foobar&quot;;
+      e.place = 14;
+      mystack.push(e);
+      e.make(&quot;class&quot;, &quot;feebar&quot;, 21);
+      mystack.push(e);
+      e.make(&quot;function&quot;, &quot;doTest&quot;, 44);
+      mystack.push(e);
+      e.make(&quot;control&quot;, &quot;for&quot;, 56);
+      mystack.push(e);
+
+      mystack.display();
+      Console.WriteLine();
+
+      Elem test = mystack.lastPopped();
+      Console.Write(&quot;\n  last popped:\n  {0}\n&quot;, test);
+
+      e = mystack.pop();
+      Console.Write(&quot;\n  popped:\n  {0}&quot;, e);
+      e = mystack.pop();
+      Console.Write(&quot;\n  popped:\n  {0}\n&quot;, e);
+      Console.Write(&quot;\n  last popped:\n  {0}\n&quot;, mystack.lastPopped());
+
+      mystack.display();
+
+      Console.Write(&quot;\n\n&quot;);
+    }
+</span>#endif
+  }
+</span>}
+</span>
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

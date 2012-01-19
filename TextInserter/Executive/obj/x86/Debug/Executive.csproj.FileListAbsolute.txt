@@ -1,0 +1,7 @@
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\bin\Debug\Executive.exe
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\bin\Debug\Executive.pdb
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\bin\Debug\VisualStudioDemo-Fall11.exe
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\bin\Debug\VisualStudioDemo-Fall11.pdb
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\obj\x86\Debug\Executive.exe
+C:\su\CSE681\code\VisualStudioDemo-Fall11\Executive\obj\x86\Debug\Executive.pdb

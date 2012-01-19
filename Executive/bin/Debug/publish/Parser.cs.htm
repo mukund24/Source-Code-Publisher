@@ -1,0 +1,181 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+///////////////////////////////////////////////////////////////////////
+// Parser.cs - Parser detects code constructs defined by rules       //
+// ver 1.1                                                           //
+// Language:    C#, 2008, .Net Framework 4.0                         //
+// Platform:    Dell Precision T7400, Win7, SP1                      //
+// Application: Demonstration for CSE681, Project #2, Fall 2011      //
+// Author:      Jim Fawcett, CST 4-187, Syracuse University          //
+//              (315) 443-3948, jfawcett@twcny.rr.com                //
+///////////////////////////////////////////////////////////////////////
+<span class="manpage">
+/*
+ * Module Operations:
+ * ------------------
+ * This module defines the following class:
+ *   Parser  - a collection of IRules
+ */
+/* Required Files:
+ *   IRulesAndActions.cs, RulesAndActions.cs, Parser.cs, Semi.cs, Toker.cs
+ *   
+ * Build command:
+ *   csc /D:TEST_PARSER Parser.cs IRulesAndActions.cs RulesAndActions.cs \
+ *                      Semi.cs Toker.cs
+ *   
+ * Maintenance History:
+ * --------------------
+ * ver 1.1 : 11 Sep 2011
+ * - added comments to parse function
+ * ver 1.0 : 28 Aug 2011
+ * - first release
+ */
+</span>
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+<span class="namespace">namespace CodeAnalysis
+</span><span>{
+  /////////////////////////////////////////////////////////
+  // rule-based parser used for code analysis
+
+<span class="class">  public class Parser
+</span><span>  {
+    private List&lt;IRule&gt; Rules;
+    private Stack Scope;
+
+<span class="function">    public Parser()
+</span><span>    {
+      Rules = new List&lt;IRule&gt;();
+      Scope = new Stack();
+    }
+</span><span class="function">    public Stack ScopeStack()
+</span><span>    {
+      return Scope;
+    }
+</span><span class="function">    public void add(IRule rule)
+</span><span>    {
+      Rules.Add(rule);
+    }
+</span><span class="function">    public void parse(CSsemi.CSemiExp semi)
+</span><span>    {
+      // Note: rule returns true to tell parser to stop
+      //       processing the current semiExp
+
+      foreach (IRule rule in Rules)
+      {
+        //semi.display();
+        if (rule.test(semi))
+          break;
+      }
+    }
+</span>  }
+</span>
+<span class="class">  class TestParser
+</span><span>  {
+    //----&lt; process commandline to get file references &gt;-----------------
+
+<span class="function">    static List&lt;string&gt; ProcessCommandline(string[] args)
+</span><span>    {
+      List&lt;string&gt; files = new List&lt;string&gt;();
+      if (args.Length == 0)
+      {
+        Console.Write(&quot;\n  Please enter file(s) to analyze\n\n&quot;);
+        return files;
+      }
+      string path = args[0];
+      path = Path.GetFullPath(path);
+      for (int i = 1; i &lt; args.Length; ++i)
+      {
+        string filename = Path.GetFileName(args[i]);
+        files.AddRange(Directory.GetFiles(path, filename));
+      }
+      return files;
+    }
+</span>
+    //----&lt; Test Stub &gt;--------------------------------------------------
+
+#if(TEST_PARSER)
+
+<span class="function">    static void Main(string[] args)
+</span><span>    {
+      Console.Write(&quot;\n  Demonstrating Parser&quot;);
+      Console.Write(&quot;\n ======================\n&quot;);
+
+      List&lt;string&gt; files = TestParser.ProcessCommandline(args);
+      foreach (object file in files)
+      {
+        Console.Write(&quot;\n  Processing file {0}\n&quot;, file as string);
+
+        CSsemi.CSemiExp semi = new CSsemi.CSemiExp();
+        semi.displayNewLines = false;
+        if (!semi.open(file as string))
+        {
+          Console.Write(&quot;\n  Can&#39;t open {0}\n\n&quot;, args[0]);
+          return;
+        }
+
+        Console.Write(&quot;\n  Type and Function Analysis&quot;);
+        Console.Write(&quot;\n ----------------------------\n&quot;);
+
+        BuildCodeAnalyzer builder = new BuildCodeAnalyzer(semi);
+        Parser parser = builder.build();
+
+        while (semi.getSemi())
+          parser.parse(semi);
+        //Console.Write(&quot;\n\n  locations table contains:&quot;);
+
+        Repository rep = Repository.getInstance();
+        List&lt;Elem&gt; table = rep.locations;
+          
+        foreach (Elem e in table)
+        {
+         // Console.Write(&quot;\n  {0,10}, {1,25}, {2,5}, {3,5}&quot;, e.type, e.name, e.begin, e.end);
+        }
+        //Console.WriteLine();
+       // Console.Write(&quot;\n\n  That&#39;s all folks!\n\n&quot;);
+        semi.close();
+      }
+    }
+</span>#endif
+  }
+</span>}
+</span>
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+

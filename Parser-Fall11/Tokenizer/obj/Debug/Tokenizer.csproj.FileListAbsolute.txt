@@ -1,0 +1,15 @@
+C:\su\CSE681\code\Project1HelpSu09\Tokenizer\bin\Debug\Tokenizer.exe
+C:\su\CSE681\code\Project1HelpSu09\Tokenizer\bin\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Project1HelpSu09\Tokenizer\obj\Debug\ResolveAssemblyReference.cache
+C:\su\CSE681\code\Project1HelpSu09\Tokenizer\obj\Debug\Tokenizer.exe
+C:\su\CSE681\code\Project1HelpSu09\Tokenizer\obj\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Parser\Tokenizer\obj\Debug\Tokenizer.exe
+C:\su\CSE681\code\Parser\Tokenizer\obj\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Parser\Tokenizer\bin\Debug\Tokenizer.exe
+C:\su\CSE681\code\Parser\Tokenizer\bin\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Parser\Tokenizer\obj\Debug\ResolveAssemblyReference.cache
+C:\su\CSE681\code\Parser-Fall11\Tokenizer\obj\Debug\Tokenizer.exe
+C:\su\CSE681\code\Parser-Fall11\Tokenizer\obj\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Parser-Fall11\Tokenizer\bin\Debug\Tokenizer.exe
+C:\su\CSE681\code\Parser-Fall11\Tokenizer\bin\Debug\Tokenizer.pdb
+C:\su\CSE681\code\Parser-Fall11\Tokenizer\obj\Debug\ResolveAssemblyReference.cache

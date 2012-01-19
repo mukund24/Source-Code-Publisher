@@ -1,0 +1,52 @@
+﻿/*
+ * Publish.css - Styles for Code Publisher
+ * ver 1.0 : 21 Aug 2011
+ * CSE681 - Software Modeling and Analysis, Fall 2011
+ * Jim Fawcett, Syracuse University
+ */
+ 
+body
+{
+  margin:3%;
+}
+
+.namespace, .class, .function { font-weight:bold; }
+
+button { width:13em; }
+
+button#buttonbutton 
+{
+  position:fixed; top:13px; right:20px;
+  height:25px; text-align:left; padding-left:10px;
+} 
+
+button#manpagebutton 
+{
+  position:fixed; top:40px; right:20px;
+  height:25px; text-align:left; padding-left:10px;
+} 
+
+button#classbutton 
+{
+  position:fixed; top:67px; right:20px; 
+  height:25px; text-align:left; padding-left:10px;
+} 
+
+button#functionbutton 
+{
+  position:fixed; top:94px; right:20px; 
+  height:25px; text-align:left; padding-left:10px;
+} 
+
+button#netbutton 
+{
+  position:fixed; top:121px; right:20px; 
+  height:25px; text-align:left; padding-left:10px;
+} 
+
+footer
+{
+  display:block;
+  margin:20px 0 30px 0;
+  text-align:center; font-size:small;
+}

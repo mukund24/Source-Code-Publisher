@@ -1,0 +1,129 @@
+<!DOCTYPE>
+<html>
+  <head>
+    <!-- 
+     - Tokenizer.htm - Prototype for Project #2 results
+     - ver 1.0 - 21 Aug 2011
+     - CSE681 - Software Modeling and Analysis, Fall 2011
+     - Jim Fawcett, Syracuse University
+    -->
+
+    <title>SOURCE CODE PUBLISHER </title>
+    <link rel="stylesheet" href="css/publish.css?v=1.0" />
+    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="js/Publish.js"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  <body>
+    <button id="buttonbutton">Toggle button view</button>
+    <button id="manpagebutton">Toggle Manual Page</button>
+    <button id="classbutton">Toggle class content</button> 
+    <button id="functionbutton">Toggle function content</button>
+    <button id="netbutton">Toggle non-essential text view</button>
+ 
+    <!-- page main content area -->
+    <div id="content">
+      <pre>
+////////////////////////////////////////////////////////////////////////////
+// Executive.cs - Starter Executive for Project #2                        //
+//Author:Mukund Narayana Murthy SUID:50361-4612                           //
+// SOURCE:Jim Fawcett, CSE681 - Software Modeling and Analysis, Fall 2011 //
+///////////////////////////////////////////////////////////////////////////
+
+<span class="manpage">
+/*
+ * Module Operations:
+ * ------------------
+ * This module defines the following class:
+ *   Program  - a class that acts a central controlling Package in Ensuring the Functioning 
+ *   of the Source Code Publisher
+ */
+/* Required Files:
+ * ===============
+ * -----------------------------
+ * Module            File Names
+ * -----------------------------       
+ * Executive    --   Executive.cs
+ * FileFinder   --   Navigate.cs
+ * Locator      --   IRulesandAction.cs,Parser.cs,RulesandActions.cs,ScopeStack.cs,Semi.cs,Toker.cs  
+ * TextInserter --   Inserter.cs,Publish.cs
+ *   
+ *   
+ * Maintenance History:
+ * --------------------
+ * Version 1.0 Release 10/10/2011.
+ * 
+ */
+</span>
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+<span class="namespace">namespace Project2
+</span><span>{
+<span class="class">    class Program
+</span><span>    {
+<span class="function">        static void Main(string[] args)
+</span><span>        {
+            string path; 
+            if (args.Length &gt; 0)
+                path = args[0];
+            else
+                path = Directory.GetCurrentDirectory();
+            Publish pub = new Publish();
+            pub.setPubDir(&quot;./publish&quot;);
+            pub.setDupDir(&quot;../../duplicate&quot;);
+            pub.setTemplate(&quot;../../Resources/Template.htm&quot;); 
+            Navigate nav = new Navigate();
+            nav.go(path, &quot;*.cs&quot;);
+            List&lt;string&gt; files = nav.getSources(); // To Obtain list of fully qualified filenames to be processed
+            DirectoryInfo di1;
+                
+                if (!Directory.Exists(pub.getDupDir()))
+                    di1 = Directory.CreateDirectory(pub.getDupDir());
+                else
+                    di1 = new DirectoryInfo(pub.getDupDir());
+                    foreach (string file in files)
+                    {
+                        FileInfo File = new FileInfo(file);
+                        DirectoryInfo di;
+          
+                        if (!Directory.Exists(pub.getPubDir()))
+                            di = Directory.CreateDirectory(pub.getPubDir());
+                        else
+                        di = new DirectoryInfo(pub.getPubDir());
+                            try
+                            {
+                                List&lt;CodeAnalysis.Elem&gt; table = pub.Locate(File);//find locations where spans need to be inserted
+                                if (table != null)
+                                {
+                                    FileInfo dupFile = pub.Spans(table, File);
+                                    if (dupFile != null)
+                                    {
+                                        pub.makePage(dupFile, di); 
+                                    }
+                                }     
+                            } 
+                            catch(Exception ex)
+                            {
+                                Console.WriteLine(&quot;An error occured: &quot; + ex.Message);
+                                continue;
+                            }
+                        pub.CreateDirList(di);       
+                    }
+        }
+</span>    }
+</span>}
+</span>
+      </pre>
+    </div>
+    <footer>
+      <hr />
+
+    </footer>
+  </body>
+</html>
+
